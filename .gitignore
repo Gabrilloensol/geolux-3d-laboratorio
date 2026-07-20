@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.npm-cache/
+.vite/
+
+*.log
+*.pid
+*.zip
+
+.env
+.env.*
+
+geolux ultima version/
+geolux-*.png
+_publish_geolux_*/
