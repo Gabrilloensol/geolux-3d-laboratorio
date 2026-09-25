@@ -70,19 +70,19 @@ export default function App() {
               </span>
             </button>
             <div className="top-actions">
-              <button type="button" className="top-action" onClick={openExplore}>
+              <button type="button" className="top-action" aria-current={screen === "explore" ? "page" : undefined} onClick={openExplore}>
                 <Home size={20} />
                 Explorar
               </button>
-              <button type="button" className="top-action" onClick={openClassMode}>
+              <button type="button" className="top-action" aria-current={screen === "class" ? "page" : undefined} onClick={openClassMode}>
                 <School size={20} />
                 Clase
               </button>
-              <button type="button" className="top-action" onClick={openChallenge}>
+              <button type="button" className="top-action" aria-current={screen === "challenge" ? "page" : undefined} onClick={openChallenge}>
                 <Trophy size={20} />
                 Desafío
               </button>
-              <button type="button" className="top-action" onClick={openTeacherMode}>
+              <button type="button" className="top-action" aria-expanded={teacherOpen} onClick={openTeacherMode}>
                 <GraduationCap size={20} />
                 Docente
               </button>

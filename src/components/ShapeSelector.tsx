@@ -11,7 +11,7 @@ export function ShapeSelector() {
   return (
     <aside className="shape-selector" aria-label="Selector de cuerpos geométricos">
       <div className="panel-title">
-        <span>Explorar</span>
+        <span>Elige un cuerpo</span>
         <strong>8 cuerpos</strong>
       </div>
       <div className="shape-list">
@@ -34,7 +34,6 @@ export function ShapeSelector() {
               <span className={`shape-glyph shape-glyph-${shape.id}`} aria-hidden="true" />
               <span>
                 <strong>{shape.shortName}</strong>
-                <small>{shape.faceType}</small>
               </span>
             </motion.button>
           );

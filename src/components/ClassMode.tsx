@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpenCheck, CheckCircle2, ChevronLeft, ChevronRight, MessageCircle, MousePointerClick, Users } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, MessageCircle, MousePointerClick, Users } from "lucide-react";
 import {
   type ClassPhase,
   closingQuestions,
@@ -38,10 +38,7 @@ export function ClassMode() {
   const resetView = useAppStore((state) => state.resetView);
   const shape = getShapeById(selectedShapeId);
   const currentStep = guidedSteps[stepIndex];
-  const currentQuestion = useMemo(
-    () => getGuidedQuestion(stepIndex, shape.compareQuestion),
-    [shape.compareQuestion, stepIndex],
-  );
+  const currentQuestion = currentStep.action === "question" ? shape.compareQuestion : currentStep.teacherPrompt;
 
   function applyStepAction() {
     if (currentStep.action === "reset") resetView();
@@ -109,25 +106,22 @@ export function ClassMode() {
 }
 
 function StarterMoment() {
+  const [questionIndex, setQuestionIndex] = useState(0);
+
   return (
     <motion.div className="class-stack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <section className="class-card class-card-hero">
-        <MessageCircle size={24} aria-hidden="true" />
-        <div>
-          <strong>Conversación inicial</strong>
-          <p>Lean una pregunta, conversen 30 segundos y luego entren a explorar.</p>
-        </div>
-      </section>
-
-      <div className="prompt-grid">
-        {starterQuestions.map((question) => (
-          <article key={question} className="prompt-card">
-            {question}
-          </article>
-        ))}
+      <div className="conversation-prompt">
+        <span>Pregunta {questionIndex + 1} de {starterQuestions.length}</span>
+        <p>{starterQuestions[questionIndex]}</p>
+        <button type="button" className="secondary-action" onClick={() => setQuestionIndex((index) => (index + 1) % starterQuestions.length)}>
+          Otra pregunta <ChevronRight size={20} aria-hidden="true" />
+        </button>
       </div>
 
-      <PaperluxRoles compact />
+      <details className="class-resource">
+        <summary>Roles para participar</summary>
+        <PaperluxRoles compact />
+      </details>
     </motion.div>
   );
 }
@@ -157,57 +151,52 @@ function DevelopmentMoment({
         </div>
         <h3>{currentStep.title}</h3>
         <p>{currentStep.instruction}</p>
-        <div className="teacher-prompt">
+        <div className="teacher-prompt" aria-label={`Pregunta sobre ${shapeName}`}>
           <MessageCircle size={18} aria-hidden="true" />
-          <span>{currentStep.teacherPrompt}</span>
+          <span>{currentQuestion}</span>
         </div>
-        <button type="button" className="primary-action class-apply" onClick={onApply}>
-          <MousePointerClick size={20} />
-          Aplicar paso
-        </button>
+        {!["select", "rotate", "question"].includes(currentStep.action) && (
+          <button type="button" className="primary-action class-apply" onClick={onApply}>
+            <MousePointerClick size={20} />
+            {currentStep.action === "reset" ? "Volver a vista inicial" : currentStep.action === "net" ? "Mostrar red" : currentStep.action === "object" ? "Mostrar ejemplo" : `Mostrar ${currentStep.title.toLowerCase().replace("activar ", "")}`}
+          </button>
+        )}
+        <div className="step-actions">
+          <button type="button" className="secondary-action" onClick={onPrevious} disabled={stepIndex === 0}>
+            <ChevronLeft size={20} />
+            Anterior
+          </button>
+          <button
+            type="button"
+            className="primary-action"
+            onClick={onNext}
+            disabled={stepIndex === guidedSteps.length - 1}
+          >
+            Siguiente
+            <ChevronRight size={20} />
+          </button>
+        </div>
       </section>
 
-      <section className="class-question-card">
-        <span>{shapeName}</span>
-        <strong>{currentQuestion}</strong>
-      </section>
-
-      <div className="step-actions">
-        <button type="button" className="secondary-action" onClick={onPrevious} disabled={stepIndex === 0}>
-          <ChevronLeft size={20} />
-          Anterior
-        </button>
-        <button
-          type="button"
-          className="primary-action"
-          onClick={onNext}
-          disabled={stepIndex === guidedSteps.length - 1}
-        >
-          Siguiente
-          <ChevronRight size={20} />
-        </button>
-      </div>
-
-      <TeamCards />
+      <details className="class-resource">
+        <summary>Misiones para equipos</summary>
+        <TeamCards />
+      </details>
     </motion.div>
   );
 }
 
 function ClosingMoment() {
+  const [questionIndex, setQuestionIndex] = useState(0);
+
   return (
     <motion.div className="class-stack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <section className="class-card class-card-hero">
-        <BookOpenCheck size={24} aria-hidden="true" />
-        <div>
-          <strong>Síntesis oral</strong>
-          <p>Elige dos preguntas y pide respuestas con evidencia en la figura.</p>
-        </div>
-      </section>
-
-      <div className="closing-list">
-        {closingQuestions.map((question) => (
-          <article key={question}>{question}</article>
-        ))}
+      <div className="conversation-prompt">
+        <span>Pregunta {questionIndex + 1} de {closingQuestions.length}</span>
+        <p>{closingQuestions[questionIndex]}</p>
+        <button type="button" className="secondary-action" onClick={() => setQuestionIndex((index) => (index + 1) % closingQuestions.length)}>
+          Otra pregunta <ChevronRight size={20} aria-hidden="true" />
+        </button>
       </div>
 
       <section className="reflection-card">
@@ -219,7 +208,10 @@ function ClosingMoment() {
         ))}
       </section>
 
-      <QuestionBank />
+      <details className="class-resource">
+        <summary>Banco de preguntas</summary>
+        <QuestionBank />
+      </details>
     </motion.div>
   );
 }
@@ -274,19 +266,4 @@ function QuestionBank() {
       ))}
     </section>
   );
-}
-
-function getGuidedQuestion(stepIndex: number, compareQuestion: string) {
-  const questions = [
-    "¿Qué nombre le darían antes de mirar la ficha?",
-    "¿Qué partes se ven desde esta posición?",
-    "¿Qué apareció al girarlo?",
-    "¿Qué forma tienen sus caras o superficies?",
-    "¿Dónde se unen dos caras?",
-    "¿Tiene vértices? ¿Cómo lo sabes?",
-    "¿Qué parte de la red se transforma en base?",
-    "¿Qué objeto cotidiano se parece a este cuerpo?",
-    compareQuestion,
-  ];
-  return questions[stepIndex] ?? compareQuestion;
 }

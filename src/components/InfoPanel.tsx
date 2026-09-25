@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Boxes, CheckCircle2, Eye, Lightbulb, Rotate3D } from "lucide-react";
+import { Boxes, ChevronDown, Eye, Rotate3D } from "lucide-react";
 import { getShapeById } from "../data/shapes";
 import { useAppStore } from "../store/useAppStore";
 import { NetViewer } from "./NetViewer";
@@ -8,6 +9,7 @@ export function InfoPanel() {
   const selectedShapeId = useAppStore((state) => state.selectedShapeId);
   const showNet = useAppStore((state) => state.showNet);
   const showRealObject = useAppStore((state) => state.showRealObject);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const shape = getShapeById(selectedShapeId);
   const curved = selectedShapeId === "cylinder" || selectedShapeId === "cone" || selectedShapeId === "sphere";
 
@@ -23,57 +25,63 @@ export function InfoPanel() {
           className="panel-stack"
         >
           <div className="info-head">
-            <span className="eyebrow">Cuerpo geométrico</span>
+            <span className="eyebrow">Exploración</span>
             <h2>{shape.name}</h2>
-            <p>{shape.description}</p>
+            <p>{getCoreIdea(selectedShapeId)}</p>
           </div>
+
+          <section className="observe-card observation-primary">
+            <h3>
+              <Eye size={18} aria-hidden="true" />
+              Pregunta para conversar
+            </h3>
+            <p>{shape.compareQuestion}</p>
+          </section>
 
           {showNet && <NetViewer shape={shape} />}
 
-          <section className="focus-card">
-            <Lightbulb size={20} aria-hidden="true" />
-            <div>
-              <span>Idea clave</span>
-              <strong>{getCoreIdea(selectedShapeId)}</strong>
+          {showRealObject && (
+            <section className="real-world">
+              <h3>
+                <Boxes size={18} aria-hidden="true" />
+                En nuestro entorno
+              </h3>
+              <p className="real-object-note">{shape.realObjectHint}</p>
+              <div className="example-chips">
+                {shape.everydayExamples.map((example) => <span key={example}>{example}</span>)}
+              </div>
+            </section>
+          )}
+
+          <button
+            type="button"
+            className="detail-toggle"
+            aria-expanded={detailsOpen}
+            aria-controls="shape-details"
+            onClick={() => setDetailsOpen((open) => !open)}
+          >
+            <span>{detailsOpen ? "Ocultar datos" : "Ver datos del cuerpo"}</span>
+            <ChevronDown size={20} aria-hidden="true" />
+          </button>
+
+          {detailsOpen && (
+            <div id="shape-details" className="shape-details">
+              <div className="metric-grid">
+                <Metric label={curved ? "Caras y superficies" : "Caras"} value={shape.faces} />
+                <Metric label={curved ? "Aristas y bordes" : "Aristas"} value={shape.edges} />
+                <Metric label="Vértices" value={shape.vertices} />
+              </div>
+              <dl className="shape-facts">
+                <div><dt>Forma</dt><dd>{shape.faceType}</dd></div>
+                <div><dt>Bases</dt><dd>{shape.bases}</dd></div>
+                <div><dt>Movimiento</dt><dd>{shape.rollStack}</dd></div>
+              </dl>
+              <p className="detail-description">{shape.description}</p>
+              <div className="example-chips" aria-label="Ejemplos cotidianos">
+                {shape.everydayExamples.map((example) => <span key={example}>{example}</span>)}
+              </div>
             </div>
-          </section>
-
-          <div className="metric-grid">
-            <Metric label={curved ? "Caras / superficies" : "Caras"} value={shape.faces} />
-            <Metric label={curved ? "Aristas / bordes" : "Aristas"} value={shape.edges} />
-            <Metric label="Vértices" value={shape.vertices} />
-          </div>
-
-          <section className="observe-card">
-            <h3>
-              <Eye size={18} aria-hidden="true" />
-              Observa ahora
-            </h3>
-            <p>{shape.compareQuestion}</p>
-            <small>{shape.bases}</small>
-          </section>
-
-          <section className="real-world">
-            <h3>
-              <Boxes size={18} aria-hidden="true" />
-              Objetos cotidianos
-            </h3>
-            <div className="example-chips">
-              {shape.everydayExamples.map((example) => (
-                <span key={example}>{example}</span>
-              ))}
-            </div>
-            {showRealObject && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="real-object-note">
-                {shape.realObjectHint}
-              </motion.p>
-            )}
-          </section>
-
-          <section className="stack-note">
-            <CheckCircle2 size={18} aria-hidden="true" />
-            <p>{shape.rollStack}</p>
-          </section>
+          )}
         </motion.div>
       </AnimatePresence>
 

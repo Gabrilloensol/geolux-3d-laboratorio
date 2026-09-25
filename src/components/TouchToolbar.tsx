@@ -1,5 +1,7 @@
+import { useState } from "react";
 import {
   Box,
+  ChevronDown,
   CircleDot,
   Eye,
   EyeOff,
@@ -12,6 +14,7 @@ import {
   Presentation,
   RotateCcw,
   Shapes,
+  SlidersHorizontal,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -19,6 +22,8 @@ import { useAppStore } from "../store/useAppStore";
 import { playUiSound } from "../utils/sound";
 
 export function TouchToolbar() {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const selectedShapeId = useAppStore((state) => state.selectedShapeId);
   const materialMode = useAppStore((state) => state.materialMode);
   const showFaces = useAppStore((state) => state.showFaces);
   const showEdges = useAppStore((state) => state.showEdges);
@@ -29,6 +34,7 @@ export function TouchToolbar() {
   const guidedView = useAppStore((state) => state.guidedView);
   const soundEnabled = useAppStore((state) => state.soundEnabled);
   const animationsPaused = useAppStore((state) => state.animationsPaused);
+  const presentationMode = useAppStore((state) => state.presentationMode);
   const resetView = useAppStore((state) => state.resetView);
   const cycleMaterialMode = useAppStore((state) => state.cycleMaterialMode);
   const toggleFaces = useAppStore((state) => state.toggleFaces);
@@ -47,58 +53,43 @@ export function TouchToolbar() {
     edges: "Aristas",
     labels: "Etiquetas",
   }[materialMode];
+  const hasEdges = selectedShapeId !== "sphere";
+  const hasVertices = selectedShapeId !== "sphere" && selectedShapeId !== "cylinder";
 
   return (
-    <nav className="touch-toolbar" aria-label="Herramientas táctiles">
-      <div className="toolbar-group" aria-label="Control de vista">
-        <span>Vista</span>
-        <ToolButton label="Reset" onClick={resetView} icon={<RotateCcw size={24} />} />
-        <ToolButton
-          label="Girar"
-          hint={autoRotate ? "Activo" : "Pausado"}
-          onClick={toggleAutoRotate}
-          active={autoRotate}
-          icon={autoRotate ? <Pause size={24} /> : <Play size={24} />}
-        />
-        <ToolButton
-          label="Guiada"
-          hint={guidedView ? "Activa" : "Libre"}
-          onClick={toggleGuidedView}
-          active={guidedView}
-          icon={guidedView ? <Eye size={24} /> : <EyeOff size={24} />}
-        />
-      </div>
-
-      <div className="toolbar-group toolbar-group-wide" aria-label="Partes geométricas">
-        <span>Partes</span>
+    <div className="touch-toolbar">
+      <nav className="toolbar-primary" aria-label="Herramientas de geometría">
         <ToolButton label="Material" hint={materialLabel} onClick={cycleMaterialMode} icon={<Layers size={24} />} />
-        <ToolButton label="Caras" onClick={toggleFaces} active={showFaces} icon={<Box size={24} />} />
-        <ToolButton label="Aristas" onClick={toggleEdges} active={showEdges} icon={<Network size={24} />} />
-        <ToolButton label="Vértices" onClick={toggleVertices} active={showVertices} icon={<CircleDot size={24} />} />
-        <ToolButton label="Red" hint="Plana" onClick={toggleNet} active={showNet} icon={<Shapes size={24} />} />
-      </div>
-
-      <div className="toolbar-group" aria-label="Aula y accesibilidad">
-        <span>Aula</span>
+        <ToolButton label={selectedShapeId === "sphere" ? "Superficie" : "Caras"} onClick={toggleFaces} active={showFaces} icon={<Box size={24} />} />
+        <ToolButton label={hasEdges ? "Aristas" : "Sin aristas"} onClick={toggleEdges} active={showEdges && hasEdges} disabled={!hasEdges} icon={<Network size={24} />} />
+        <ToolButton label={hasVertices ? "Vértices" : "Sin vértices"} onClick={toggleVertices} active={showVertices && hasVertices} disabled={!hasVertices} icon={<CircleDot size={24} />} />
+        <ToolButton label="Red" onClick={toggleNet} active={showNet} icon={<Shapes size={24} />} />
         <ToolButton label="Objeto" onClick={toggleRealObject} active={showRealObject} icon={<MousePointerClick size={24} />} />
-        <ToolButton
-          label="Pausa"
-          hint={animationsPaused ? "Sí" : "No"}
-          onClick={toggleAnimations}
-          active={animationsPaused}
-          icon={animationsPaused ? <Play size={24} /> : <Pause size={24} />}
-        />
-        <ToolButton
-          label="Sonido"
-          hint={soundEnabled ? "Sí" : "No"}
-          onClick={toggleSound}
-          active={soundEnabled}
-          icon={soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
-        />
-        <ToolButton label="Presentar" onClick={togglePresentationMode} icon={<Presentation size={24} />} />
-        <ToolButton label="Pantalla" onClick={requestFullScreen} icon={<Maximize2 size={24} />} />
-      </div>
-    </nav>
+        <button
+          type="button"
+          className={`tool-button more-tools-button ${moreOpen ? "is-active" : ""}`}
+          onClick={() => setMoreOpen((open) => !open)}
+          aria-expanded={moreOpen}
+          aria-controls="toolbar-extra"
+          aria-label={moreOpen ? "Ocultar más herramientas" : "Mostrar más herramientas"}
+        >
+          <SlidersHorizontal size={24} aria-hidden="true" />
+          <span>Más</span>
+          <ChevronDown size={15} aria-hidden="true" />
+        </button>
+      </nav>
+      {moreOpen && (
+        <nav id="toolbar-extra" className="toolbar-extra" aria-label="Más herramientas">
+          <ToolButton label="Reset" onClick={resetView} icon={<RotateCcw size={24} />} />
+          <ToolButton label="Girar" hint={autoRotate ? "Activo" : "Pausado"} onClick={toggleAutoRotate} active={autoRotate} icon={autoRotate ? <Pause size={24} /> : <Play size={24} />} />
+          <ToolButton label="Guiada" hint={guidedView ? "Activa" : "Libre"} onClick={toggleGuidedView} active={guidedView} icon={guidedView ? <Eye size={24} /> : <EyeOff size={24} />} />
+          <ToolButton label="Pausa" hint={animationsPaused ? "Sí" : "No"} onClick={toggleAnimations} active={animationsPaused} icon={animationsPaused ? <Play size={24} /> : <Pause size={24} />} />
+          <ToolButton label="Sonido" hint={soundEnabled ? "Sí" : "No"} onClick={toggleSound} active={soundEnabled} icon={soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />} />
+          <ToolButton label="Presentar" onClick={togglePresentationMode} active={presentationMode} icon={<Presentation size={24} />} />
+          <ToolButton label="Pantalla" onClick={requestFullScreen} icon={<Maximize2 size={24} />} />
+        </nav>
+      )}
+    </div>
   );
 }
 
@@ -107,12 +98,14 @@ function ToolButton({
   icon,
   onClick,
   active = false,
+  disabled = false,
   hint,
 }: {
   label: string;
   icon: JSX.Element;
   onClick: () => void;
   active?: boolean;
+  disabled?: boolean;
   hint?: string;
 }) {
   const fullLabel = hint ? `${label}: ${hint}` : label;
@@ -122,6 +115,7 @@ function ToolButton({
     <button
       type="button"
       className={`tool-button ${active ? "is-active" : ""}`}
+      disabled={disabled}
       onClick={() => {
         playUiSound("select", soundEnabled);
         onClick();

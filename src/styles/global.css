@@ -2265,3 +2265,408 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Classroom layout: the page can grow when a projector has little vertical space. */
+.main-shell {
+  height: auto;
+  min-height: 100dvh;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  overflow: visible;
+}
+
+.workspace,
+.presentation-mode .workspace {
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr) minmax(300px, 370px);
+  min-width: 0;
+  overflow: visible;
+}
+
+.scene-stage,
+.scene-wrap {
+  height: clamp(420px, calc(100dvh - 250px), 760px);
+  min-height: 420px;
+}
+
+.scene-stage,
+.shape-selector,
+.info-panel,
+.challenge-panel,
+.class-panel {
+  min-width: 0;
+}
+
+.shape-selector,
+.info-panel,
+.challenge-panel,
+.class-panel {
+  max-height: clamp(420px, calc(100dvh - 250px), 760px);
+}
+
+.shape-button {
+  min-height: 66px;
+}
+
+.shape-button > span:last-child {
+  min-width: 0;
+}
+
+.shape-button strong {
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.shape-glyph {
+  flex-basis: 38px;
+  width: 38px;
+  height: 38px;
+}
+
+.info-panel .panel-stack {
+  gap: 0.9rem;
+}
+
+.observation-primary {
+  border-color: rgba(123, 241, 255, 0.42);
+  background: rgba(123, 241, 255, 0.1);
+}
+
+.observation-primary p,
+.conversation-prompt p {
+  color: #fff;
+  font-size: 1.18rem;
+  font-weight: 750;
+  line-height: 1.32;
+}
+
+.detail-toggle,
+.class-resource > summary {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: rgba(123, 241, 255, 0.08);
+  color: var(--text);
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+}
+
+.detail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.detail-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.shape-details {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.shape-facts {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.shape-facts div {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 0.55rem;
+}
+
+.shape-facts dt {
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+.shape-facts dd {
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
+}
+
+.detail-description {
+  margin: 0;
+  color: #d8e6f7;
+  line-height: 1.4;
+}
+
+.real-world .example-chips {
+  margin-top: 0.7rem;
+}
+
+.touch-toolbar {
+  display: grid;
+  overflow: visible;
+  gap: 0.55rem;
+  padding: 0.55rem;
+}
+
+.toolbar-primary,
+.toolbar-extra {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.toolbar-extra {
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  padding-top: 0.55rem;
+}
+
+.tool-button,
+.presentation-mode .tool-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 70px;
+  padding: 0.48rem 0.3rem;
+  border-radius: 12px;
+}
+
+.tool-button span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.tool-button small {
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.more-tools-button svg:last-child {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+}
+
+.more-tools-button[aria-expanded="true"] svg:last-child {
+  transform: rotate(180deg);
+}
+
+.conversation-prompt {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid rgba(123, 241, 255, 0.4);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(123, 241, 255, 0.1);
+}
+
+.conversation-prompt > span {
+  color: var(--cyan);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.conversation-prompt .secondary-action {
+  justify-self: start;
+}
+
+.class-panel .class-head h2 {
+  margin-bottom: 0;
+}
+
+.class-panel .class-tabs {
+  margin: 0.65rem 0 0.7rem;
+}
+
+.class-panel .class-stack {
+  gap: 0.65rem;
+}
+
+.class-panel .guided-step-card {
+  gap: 0.55rem;
+  padding: 0.8rem;
+}
+
+.class-panel .guided-step-card h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.class-panel .teacher-prompt {
+  padding: 0.65rem;
+}
+
+.class-panel .step-actions {
+  margin-top: 0.15rem;
+}
+
+.scene-wrap-home {
+  height: 100%;
+}
+
+.top-action[aria-current="page"] {
+  border-color: rgba(123, 241, 255, 0.7);
+  background: rgba(123, 241, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(123, 241, 255, 0.18), 0 0 22px rgba(123, 241, 255, 0.1);
+}
+
+.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+  border-style: dashed;
+}
+
+.class-resource > summary {
+  list-style: none;
+}
+
+.class-resource > summary::-webkit-details-marker {
+  display: none;
+}
+
+.class-resource > summary::after {
+  content: "+";
+  float: right;
+  color: var(--cyan);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.class-resource[open] > summary::after {
+  content: "−";
+}
+
+.class-resource > :not(summary) {
+  margin-top: 0.6rem;
+}
+
+.teacher-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+}
+
+.teacher-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: rgba(2, 5, 17, 0.7);
+  cursor: pointer;
+}
+
+.teacher-drawer {
+  z-index: 1;
+}
+
+.primary-action:focus-visible,
+.secondary-action:focus-visible,
+.top-action:focus-visible,
+.shape-button:focus-visible,
+.tool-button:focus-visible,
+.detail-toggle:focus-visible,
+.class-resource > summary:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1180px) {
+  .workspace,
+  .presentation-mode .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shape-selector,
+  .info-panel,
+  .challenge-panel,
+  .class-panel {
+    grid-column: 1;
+    max-height: none;
+  }
+
+  .shape-list {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .shape-button,
+  .presentation-mode .shape-button {
+    flex: 0 0 164px;
+    min-height: 70px;
+    justify-content: flex-start;
+    scroll-snap-align: start;
+  }
+
+  .scene-stage,
+  .scene-wrap {
+    height: clamp(400px, 58dvh, 620px);
+    min-height: 400px;
+  }
+
+  .touch-toolbar {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .top-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .top-action {
+    min-width: 0;
+  }
+
+  .shape-list {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .shape-button,
+  .presentation-mode .shape-button {
+    flex: 0 0 152px;
+    min-height: 72px;
+    flex-direction: row;
+    align-items: center;
+    scroll-snap-align: start;
+  }
+
+  .toolbar-primary,
+  .toolbar-extra {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .scene-stage,
+  .scene-wrap {
+    height: clamp(360px, 52dvh, 520px);
+    min-height: 360px;
+  }
+
+  .teacher-drawer {
+    top: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100vw - 1rem);
+  }
+
+  .hero-copy h1 {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .toolbar-primary,
+  .toolbar-extra {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .home-scene,
+  .scene-wrap-home {
+    min-height: 360px;
+  }
+}

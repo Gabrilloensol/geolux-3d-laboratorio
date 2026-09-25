@@ -12,14 +12,18 @@ export function TeacherMode() {
   return (
     <AnimatePresence>
       {teacherOpen && (
-        <motion.aside
-          className="teacher-drawer"
-          initial={{ x: "110%", opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: "110%", opacity: 0 }}
-          transition={{ type: "spring", stiffness: 220, damping: 26 }}
-          aria-label="Panel docente"
-        >
+        <motion.div className="teacher-layer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <button type="button" className="teacher-backdrop" onClick={toggleTeacher} aria-label="Cerrar panel docente" />
+          <motion.aside
+            className="teacher-drawer"
+            initial={{ x: "110%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "110%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 220, damping: 26 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Panel docente"
+          >
           <div className="teacher-head">
             <div>
               <span className="eyebrow">Modo docente</span>
@@ -74,7 +78,8 @@ export function TeacherMode() {
               Pantalla completa
             </button>
           </div>
-        </motion.aside>
+          </motion.aside>
+        </motion.div>
       )}
     </AnimatePresence>
   );

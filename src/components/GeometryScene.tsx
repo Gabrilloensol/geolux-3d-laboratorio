@@ -429,22 +429,7 @@ function CurvedSurfaceGuides({ shapeId, visible }: { shapeId: ShapeId; visible: 
   if (!visible) return null;
 
   if (shapeId === "sphere") {
-    return (
-      <group>
-        <mesh rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
-          <torusGeometry args={[1.13, 0.008, 8, 96]} />
-          <meshBasicMaterial color="#dffcff" transparent opacity={0.78} blending={THREE.AdditiveBlending} />
-        </mesh>
-        <mesh rotation={[0, Math.PI / 2, 0]} raycast={() => null}>
-          <torusGeometry args={[1.13, 0.008, 8, 96]} />
-          <meshBasicMaterial color="#8ff4ff" transparent opacity={0.62} blending={THREE.AdditiveBlending} />
-        </mesh>
-        <mesh rotation={[0, 0, Math.PI / 2]} raycast={() => null}>
-          <torusGeometry args={[1.13, 0.008, 8, 96]} />
-          <meshBasicMaterial color="#b49bff" transparent opacity={0.55} blending={THREE.AdditiveBlending} />
-        </mesh>
-      </group>
-    );
+    return null;
   }
 
   if (shapeId === "cylinder") {
@@ -586,7 +571,6 @@ function AnimatedHotspot({
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
-      <pointLight color={color} intensity={0.12} distance={0.82} />
     </mesh>
   );
 }
