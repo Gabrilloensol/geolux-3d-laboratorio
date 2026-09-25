@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronLeft, ChevronRight, MessageCircle, MousePointerClick, Users } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import {
 } from "../data/classMode";
 import { getShapeById } from "../data/shapes";
 import { useAppStore } from "../store/useAppStore";
+import { NetViewer } from "./NetViewer";
 
 const phaseLabels: Record<ClassPhase, string> = {
   inicio: "Inicio",
@@ -37,8 +38,13 @@ export function ClassMode() {
   const toggleRealObject = useAppStore((state) => state.toggleRealObject);
   const resetView = useAppStore((state) => state.resetView);
   const shape = getShapeById(selectedShapeId);
+  const netRef = useRef<HTMLDivElement>(null);
   const currentStep = guidedSteps[stepIndex];
   const currentQuestion = currentStep.action === "question" ? shape.compareQuestion : currentStep.teacherPrompt;
+
+  useEffect(() => {
+    if (showNet) netRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [showNet]);
 
   function applyStepAction() {
     if (currentStep.action === "reset") resetView();
@@ -101,6 +107,7 @@ export function ClassMode() {
         />
       )}
       {phase === "cierre" && <ClosingMoment />}
+      {showNet && <div ref={netRef} className="class-net-reveal"><NetViewer shape={shape} /></div>}
     </aside>
   );
 }

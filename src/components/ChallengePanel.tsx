@@ -6,6 +6,7 @@ import { getShapeById } from "../data/shapes";
 import { useAppStore } from "../store/useAppStore";
 import { playUiSound } from "../utils/sound";
 import { ProgressBar } from "./ProgressBar";
+import { NetViewer } from "./NetViewer";
 
 type Feedback = {
   correct: boolean;
@@ -21,6 +22,7 @@ export function ChallengePanel() {
   const sceneInteractionCount = useAppStore((state) => state.sceneInteractionCount);
   const lastPartSelection = useAppStore((state) => state.lastPartSelection);
   const soundEnabled = useAppStore((state) => state.soundEnabled);
+  const showNet = useAppStore((state) => state.showNet);
   const setSelectedShape = useAppStore((state) => state.setSelectedShape);
   const setMaterialMode = useAppStore((state) => state.setMaterialMode);
   const addChallengeResult = useAppStore((state) => state.addChallengeResult);
@@ -33,6 +35,7 @@ export function ChallengePanel() {
   const [completed, setCompleted] = useState(false);
   const handledPartNonce = useRef(0);
   const initialInteractionCount = useRef(sceneInteractionCount);
+  const netRef = useRef<HTMLDivElement>(null);
 
   const current = challenges[challengeIndex];
 
@@ -55,6 +58,10 @@ export function ChallengePanel() {
     handledPartNonce.current = lastPartSelection.nonce;
     resolveAnswer(lastPartSelection.part === current.targetPart);
   }, [current, lastPartSelection]);
+
+  useEffect(() => {
+    if (showNet) netRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [showNet]);
 
   if (!current) {
     return (
@@ -176,6 +183,8 @@ export function ChallengePanel() {
           </div>
         )}
       </motion.div>
+
+      {showNet && <div ref={netRef} className="challenge-net-reveal"><NetViewer shape={shape} /></div>}
 
       {feedback && (
         <motion.div

@@ -8,6 +8,7 @@ import { OrbitControls } from "@react-three/drei/core/OrbitControls.js";
 import { Stars } from "@react-three/drei/core/Stars.js";
 import { Html } from "@react-three/drei/web/Html.js";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { challenges } from "../data/challenges";
 import { getShapeById } from "../data/shapes";
 import { useAppStore } from "../store/useAppStore";
@@ -25,11 +26,13 @@ const modeLabels: Record<MaterialMode, string> = {
 };
 
 export function GeometryScene({ showcase = false }: GeometrySceneProps) {
+  const animationsPaused = useAppStore((state) => state.animationsPaused);
+
   return (
     <div className={showcase ? "scene-wrap scene-wrap-home" : "scene-wrap"} aria-label="Escena 3D interactiva">
       <Canvas
-        shadows
-        camera={{ position: [3.7, 2.7, 4.4], fov: showcase ? 40 : 44 }}
+        shadows={!showcase}
+        camera={{ position: showcase ? [0, 1.1, 7.4] : [3.3, 2.5, 4], fov: showcase ? 42 : 44 }}
         dpr={[1, 1.5]}
         performance={{ min: 0.55 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -37,19 +40,22 @@ export function GeometryScene({ showcase = false }: GeometrySceneProps) {
       >
         <color attach="background" args={["#050817"]} />
         <fog attach="fog" args={["#050817", 7.5, 16.5]} />
-        <SceneLights />
+        <StudioEnvironment />
+        <SceneLights showcase={showcase} />
         <Suspense fallback={<Html center className="scene-loading">Cargando escena 3D...</Html>}>
           <SceneAtmosphere showcase={showcase} />
           {showcase ? <ShowcaseBodies /> : <InteractiveBody />}
-          <ContactShadows
-            position={[0, -1.36, 0]}
-            opacity={0.56}
-            scale={7.4}
-            blur={3}
-            far={4.2}
-            color="#0a173f"
-          />
-          <Stars radius={28} depth={18} count={showcase ? 300 : 190} factor={1.55} saturation={0} fade speed={0.22} />
+          {!showcase && (
+            <ContactShadows
+              position={[0, -1.36, 0]}
+              opacity={0.56}
+              scale={7.4}
+              blur={3}
+              far={4.2}
+              color="#0a173f"
+            />
+          )}
+          <Stars radius={28} depth={18} count={showcase ? 300 : 190} factor={1.55} saturation={0} fade speed={animationsPaused ? 0 : 0.22} />
         </Suspense>
         {!showcase && <SceneControls />}
       </Canvas>
@@ -58,22 +64,43 @@ export function GeometryScene({ showcase = false }: GeometrySceneProps) {
   );
 }
 
-function SceneLights() {
+function StudioEnvironment() {
+  const gl = useThree((state) => state.gl);
+  const scene = useThree((state) => state.scene);
+
+  useEffect(() => {
+    const room = new RoomEnvironment();
+    const generator = new THREE.PMREMGenerator(gl);
+    const map = generator.fromScene(room).texture;
+    scene.environment = map;
+    room.dispose();
+    generator.dispose();
+
+    return () => {
+      if (scene.environment === map) scene.environment = null;
+      map.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
+
+function SceneLights({ showcase }: { showcase: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.34} />
-      <hemisphereLight args={["#c6f4ff", "#231033", 0.58]} />
+      <ambientLight intensity={showcase ? 0.22 : 0.28} />
+      <hemisphereLight args={["#c6f4ff", "#231033", showcase ? 0.38 : 0.48]} />
       <directionalLight
-        castShadow
+        castShadow={!showcase}
         position={[4.2, 5.4, 3.8]}
-        intensity={1.7}
+        intensity={showcase ? 1.15 : 1.45}
         color="#e9f8ff"
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
-      <pointLight position={[-3.4, 2.6, 2.7]} color="#8e7dff" intensity={11} distance={10} />
-      <pointLight position={[2.5, -0.35, -3.3]} color="#50e9ff" intensity={7.8} distance={8} />
-      <pointLight position={[0.2, 2.1, 1.8]} color="#ffd889" intensity={5.8} distance={6.6} />
+      <pointLight position={[-3.4, 2.6, 2.7]} color="#8e7dff" intensity={showcase ? 7 : 9} distance={10} />
+      <pointLight position={[2.5, -0.35, -3.3]} color="#50e9ff" intensity={showcase ? 5 : 6.6} distance={8} />
+      <pointLight position={[0.2, 2.1, 1.8]} color="#ffd889" intensity={showcase ? 3.8 : 4.8} distance={6.6} />
     </>
   );
 }
@@ -129,6 +156,23 @@ function SparkField({ count, spread }: { count: number; spread: number }) {
 function GeometryDais({ showcase }: { showcase: boolean }) {
   const group = useRef<THREE.Group>(null);
   const animationsPaused = useAppStore((state) => state.animationsPaused);
+  const size = useThree((state) => state.size);
+  const placement = showcase ? getShowcasePlacement(size.width, size.height) : { x: 0, y: 0, scale: 1 };
+  const tickPositions = useMemo(() => {
+    const positions = new Float32Array(48 * 6);
+    for (let index = 0; index < 48; index += 1) {
+      const angle = (index / 48) * Math.PI * 2;
+      const inner = index % 6 === 0 ? 2.13 : 2.2;
+      const offset = index * 6;
+      positions[offset] = Math.cos(angle) * inner;
+      positions[offset + 1] = 0.014;
+      positions[offset + 2] = Math.sin(angle) * inner;
+      positions[offset + 3] = Math.cos(angle) * 2.32;
+      positions[offset + 4] = 0.014;
+      positions[offset + 5] = Math.sin(angle) * 2.32;
+    }
+    return positions;
+  }, []);
 
   useFrame(({ clock }) => {
     if (!group.current || animationsPaused) return;
@@ -136,7 +180,7 @@ function GeometryDais({ showcase }: { showcase: boolean }) {
   });
 
   return (
-    <group ref={group} position={[0, -1.34, 0]} scale={showcase ? 0.92 : 1} raycast={() => null}>
+    <group ref={group} position={[placement.x, -1.34 + placement.y, 0]} scale={placement.scale} raycast={() => null}>
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[2.55, 96]} />
         <meshBasicMaterial color="#88edff" transparent opacity={0.075} side={THREE.DoubleSide} depthWrite={false} />
@@ -153,6 +197,12 @@ function GeometryDais({ showcase }: { showcase: boolean }) {
           />
         </mesh>
       ))}
+      <lineSegments raycast={() => null}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[tickPositions, 3]} />
+        </bufferGeometry>
+        <lineBasicMaterial color="#ffd889" transparent opacity={0.34} depthWrite={false} />
+      </lineSegments>
     </group>
   );
 }
@@ -167,7 +217,7 @@ function SceneControls() {
   const viewResetNonce = useAppStore((state) => state.viewResetNonce);
 
   useEffect(() => {
-    camera.position.set(3.7, 2.7, 4.4);
+    camera.position.set(3.3, 2.5, 4);
     controls.current?.target.set(0, 0, 0);
     controls.current?.update();
   }, [camera, selectedShapeId, viewResetNonce]);
@@ -225,6 +275,7 @@ function InteractiveBody() {
   return (
     <Float speed={animationsPaused ? 0 : 1.2} rotationIntensity={animationsPaused ? 0 : 0.08} floatIntensity={0.14}>
       <group rotation={rotation}>
+        <ShapeArrival key={selectedShapeId} shapeId={selectedShapeId} animationsPaused={animationsPaused} />
         <ShapeBody
           shapeId={selectedShapeId}
           materialMode={materialMode}
@@ -234,11 +285,11 @@ function InteractiveBody() {
           onBodySelect={handlePart(selectedShapeId === "sphere" ? "surface" : "face")}
         />
         <CurvedSurfaceGuides shapeId={selectedShapeId} visible={showEdges || materialMode === "labels"} />
-        {(showEdges || materialMode === "edges" || materialMode === "labels" || targetPart === "edge") && (
-          <HotspotCloud points={shape.edgePoints} part="edge" onSelect={handlePart} color="#78efff" />
+        {(materialMode === "labels" || targetPart === "edge") && (
+          <HotspotCloud key={`${selectedShapeId}-edges`} points={shape.edgePoints} part="edge" onSelect={handlePart} color="#78efff" />
         )}
         {(showVertices || materialMode === "labels" || targetPart === "vertex") && (
-          <HotspotCloud points={shape.vertexPoints} part="vertex" onSelect={handlePart} color="#ffe58a" />
+          <HotspotCloud key={`${selectedShapeId}-vertices`} points={shape.vertexPoints} part="vertex" onSelect={handlePart} color="#ffe58a" />
         )}
         {(targetPart === "base" || materialMode === "labels") && (
           <BaseHotspots points={shape.basePoints} onSelect={handlePart} />
@@ -247,6 +298,50 @@ function InteractiveBody() {
         {materialMode === "labels" && <EducationalLabels />}
       </group>
     </Float>
+  );
+}
+
+function ShapeArrival({ shapeId, animationsPaused }: { shapeId: ShapeId; animationsPaused: boolean }) {
+  const points = useRef<THREE.Points>(null);
+  const material = useRef<THREE.PointsMaterial>(null);
+  const elapsed = useRef(0);
+  const positions = useMemo(() => {
+    const data = new Float32Array(42 * 3);
+    for (let index = 0; index < 42; index += 1) {
+      const angle = seeded(index + 15) * Math.PI * 2;
+      const height = (seeded(index + 57) - 0.5) * 2.4;
+      const radius = 1.1 + seeded(index + 89) * 0.55;
+      data[index * 3] = Math.cos(angle) * radius;
+      data[index * 3 + 1] = height;
+      data[index * 3 + 2] = Math.sin(angle) * radius;
+    }
+    return data;
+  }, [shapeId]);
+
+  useFrame((_, delta) => {
+    if (!points.current || !material.current) return;
+    elapsed.current += animationsPaused ? 2 : delta;
+    const progress = Math.min(1, elapsed.current / 1.25);
+    points.current.visible = progress < 1;
+    points.current.scale.setScalar(0.7 + progress * 0.45);
+    material.current.opacity = (1 - progress) * 0.68;
+  });
+
+  return (
+    <points ref={points} raycast={() => null}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        ref={material}
+        color={getShapePalette(shapeId).edge}
+        size={0.042}
+        transparent
+        opacity={0.68}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
   );
 }
 
@@ -301,11 +396,13 @@ function ShapeBody({
         <meshPhysicalMaterial
           ref={material}
           color={color}
-          roughness={0.22}
-          metalness={0.08}
+          roughness={0.2}
+          metalness={0.04}
           clearcoat={0.9}
           clearcoatRoughness={0.14}
-          transmission={materialMode === "solid" ? 0 : 0.18}
+          envMapIntensity={0.28}
+          iridescence={0.12}
+          iridescenceIOR={1.25}
           transparent
           opacity={opacity}
           depthWrite={opacity > 0.45}
@@ -323,12 +420,13 @@ function ShapeBody({
 function FaceSheen({ shapeId, visible, color }: { shapeId: ShapeId; visible: boolean; color: string }) {
   const mesh = useRef<THREE.Mesh>(null);
   const material = useRef<THREE.MeshBasicMaterial>(null);
+  const animationsPaused = useAppStore((state) => state.animationsPaused);
 
   useFrame(({ clock }) => {
     if (!mesh.current || !material.current) return;
-    const glow = visible ? 0.11 + Math.sin(clock.elapsedTime * 1.7) * 0.025 : 0;
+    const glow = visible ? 0.06 + (animationsPaused ? 0 : Math.sin(clock.elapsedTime * 1.7) * 0.014) : 0;
     material.current.opacity = THREE.MathUtils.lerp(material.current.opacity, Math.max(0, glow), 0.08);
-    mesh.current.scale.setScalar(1.012 + Math.sin(clock.elapsedTime * 1.25) * 0.004);
+    mesh.current.scale.setScalar(1.012 + (animationsPaused ? 0 : Math.sin(clock.elapsedTime * 1.25) * 0.004));
   });
 
   return (
@@ -378,8 +476,10 @@ function AnimatedEdges({
     const speed = animationsPaused ? 1 : Math.min(1, delta * 2.7);
     const target = visible ? 1 : 0;
     reveal.current = THREE.MathUtils.lerp(reveal.current, target, speed);
-    material.current.opacity = reveal.current * (0.86 + Math.sin(clock.elapsedTime * 2.1) * 0.08);
+    material.current.opacity = reveal.current * (0.86 + (animationsPaused ? 0 : Math.sin(clock.elapsedTime * 2.1) * 0.08));
     line.current.scale.setScalar(1.006 + reveal.current * 0.012);
+    const count = geometry.getAttribute("position").count;
+    line.current.geometry.setDrawRange(0, Math.floor((count * reveal.current) / 2) * 2);
   });
 
   return (
@@ -467,7 +567,7 @@ function getShapeRotation(shapeId: ShapeId): Vec3 {
 function getOpacity(mode: MaterialMode, showFaces: boolean) {
   if (!showFaces) return 0.06;
   if (mode === "solid") return 0.92;
-  if (mode === "translucent") return 0.48;
+  if (mode === "translucent") return 0.53;
   if (mode === "edges") return 0.08;
   return 0.36;
 }
@@ -480,14 +580,14 @@ function getEmissiveIntensity(mode: MaterialMode) {
 
 function getBodyColor(shapeId: ShapeId) {
   const colors: Record<ShapeId, string> = {
-    cube: "#58d5ff",
-    "rectangular-prism": "#8d8cff",
-    "triangular-prism": "#52efc5",
-    "square-pyramid": "#d7a7ff",
-    "triangular-pyramid": "#8df0ff",
-    cylinder: "#5be7ff",
-    cone: "#ffc56b",
-    sphere: "#dca8ff",
+    cube: "#178cae",
+    "rectangular-prism": "#6152b7",
+    "triangular-prism": "#148f70",
+    "square-pyramid": "#945bb8",
+    "triangular-pyramid": "#258da4",
+    cylinder: "#188fa4",
+    cone: "#b98332",
+    sphere: "#834fb3",
   };
   return colors[shapeId];
 }
@@ -550,28 +650,36 @@ function AnimatedHotspot({
   const material = useRef<THREE.MeshBasicMaterial>(null);
   const radius = part === "vertex" ? 0.12 : 0.105;
   const animationsPaused = useAppStore((state) => state.animationsPaused);
+  const startedAt = useRef<number | null>(null);
 
   useFrame(({ clock }) => {
     if (!mesh.current || !material.current) return;
+    if (startedAt.current === null) startedAt.current = clock.elapsedTime;
     const delay = index * 0.11;
-    const reveal = Math.min(1, Math.max(0, clock.elapsedTime * 1.6 - delay));
+    const reveal = animationsPaused ? 1 : Math.min(1, Math.max(0, (clock.elapsedTime - startedAt.current) * 1.6 - delay));
     const sparkle = animationsPaused ? 1 : 0.9 + Math.sin(clock.elapsedTime * 2.8 + index) * 0.16;
     mesh.current.scale.setScalar(radius * reveal * sparkle);
     material.current.opacity = 0.68 + reveal * 0.3;
   });
 
   return (
-    <mesh ref={mesh} position={point} onPointerDown={onSelect(part, point)} castShadow>
-      <sphereGeometry args={[1, 16, 16]} />
-      <meshBasicMaterial
-        ref={material}
-        color={color}
-        transparent
-        opacity={0.92}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </mesh>
+    <group position={point} onPointerDown={onSelect(part, point)}>
+      <mesh ref={mesh}>
+        <sphereGeometry args={[1, 16, 16]} />
+        <meshBasicMaterial
+          ref={material}
+          color={color}
+          transparent
+          opacity={0.92}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[0.22, 12, 12]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
   );
 }
 
@@ -723,6 +831,8 @@ function SceneBadge() {
 
 function ShowcaseBodies() {
   const animationsPaused = useAppStore((state) => state.animationsPaused);
+  const size = useThree((state) => state.size);
+  const placement = getShowcasePlacement(size.width, size.height);
   const items: Array<{ id: ShapeId; position: Vec3; scale: number; rotation: Vec3 }> = [
     { id: "cube", position: [-1.9, 0.4, 0], scale: 0.64, rotation: [0.2, 0.5, 0.1] },
     { id: "sphere", position: [0, 0.1, 0.2], scale: 0.72, rotation: [0, 0, 0] },
@@ -732,7 +842,7 @@ function ShowcaseBodies() {
   ];
 
   return (
-    <group>
+    <group position={[placement.x, placement.y, 0]} scale={placement.scale}>
       {items.map((item, index) => (
         <Float
           key={item.id}
@@ -745,11 +855,13 @@ function ShowcaseBodies() {
             <meshPhysicalMaterial
               color={getBodyColor(item.id)}
               transparent
-              opacity={0.68}
+              opacity={0.82}
               roughness={0.22}
               metalness={0.08}
               clearcoat={0.75}
               clearcoatRoughness={0.12}
+              envMapIntensity={0.28}
+              iridescence={0.1}
               side={THREE.DoubleSide}
               emissive={new THREE.Color(getShapePalette(item.id).emissive)}
               emissiveIntensity={0.16}
@@ -760,6 +872,13 @@ function ShowcaseBodies() {
       ))}
     </group>
   );
+}
+
+function getShowcasePlacement(width: number, height: number) {
+  if (height < 700 && width < 1020) return { x: 1.05, y: -2.25, scale: 0.52 };
+  if (width < 620) return { x: 0, y: -1.45, scale: 0.48 };
+  if (width < 1020) return { x: 0, y: -1.36, scale: 0.72 };
+  return { x: 1.65, y: 0.08, scale: Math.min(0.95, 703 / height) };
 }
 
 function getLocalHitPoint(event: ThreeEvent<PointerEvent>): Vec3 | undefined {

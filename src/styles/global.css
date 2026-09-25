@@ -696,21 +696,22 @@ button {
 }
 
 .net-head {
-  align-items: flex-start;
-  margin-bottom: 0.7rem;
+  display: grid;
+  justify-content: stretch;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 
 .net-head strong {
-  max-width: 68%;
   color: #eafcff;
   line-height: 1.28;
-  text-align: right;
+  text-align: left;
 }
 
 .net-viewer svg {
+  display: block;
   width: 100%;
   height: auto;
-  min-height: 190px;
 }
 
 .challenge-panel {
@@ -2668,5 +2669,237 @@ body {
   .home-scene,
   .scene-wrap-home {
     min-height: 360px;
+  }
+}
+
+/* The opening scene is the room itself, with controls layered over the exhibit. */
+.home-screen {
+  display: block;
+  min-height: 100dvh;
+  padding: 0;
+  background: #050817;
+}
+
+.home-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  filter: none;
+  pointer-events: none;
+}
+
+.home-scene::before {
+  display: none;
+}
+
+.home-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(3, 6, 19, 0.94) 0%, rgba(3, 6, 19, 0.86) 31%, rgba(3, 6, 19, 0.26) 62%, rgba(3, 6, 19, 0.08) 100%),
+    linear-gradient(0deg, rgba(3, 6, 19, 0.55), transparent 24%, transparent 78%, rgba(3, 6, 19, 0.32));
+}
+
+.home-scene .scene-wrap-home {
+  height: 100%;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.hero-copy {
+  z-index: 2;
+  width: min(580px, 52%);
+  min-height: 100dvh;
+  margin-left: clamp(1.5rem, 5vw, 6rem);
+  padding: 3.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.hero-copy::before {
+  display: none;
+}
+
+.hero-copy .eyebrow {
+  border-left: 2px solid var(--gold);
+  padding-left: 0.85rem;
+}
+
+.hero-copy h1 {
+  margin: 1.1rem 0 0.85rem;
+  font-size: 5.6rem;
+  line-height: 1;
+}
+
+.hero-copy p {
+  max-width: 470px;
+  font-size: 1.35rem;
+}
+
+.hero-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  width: min(490px, 100%);
+  margin-top: 1.75rem;
+}
+
+.hero-actions .hero-button {
+  min-width: 0;
+  min-height: 62px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  line-height: 1.22;
+}
+
+.hero-actions .primary-action,
+.hero-actions .secondary-action:last-child {
+  grid-column: 1 / -1;
+}
+
+.home-credit {
+  margin-top: 1.35rem !important;
+  font-size: 0.95rem !important;
+}
+
+@media (max-width: 1020px) {
+  .hero-copy {
+    justify-content: flex-start;
+    width: min(590px, calc(100% - 3rem));
+    margin-left: 1.5rem;
+    padding-top: 3.2rem;
+  }
+
+  .hero-copy h1 {
+    font-size: 4.5rem;
+  }
+
+  .home-scene::after {
+    background: linear-gradient(180deg, rgba(3, 6, 19, 0.95) 0%, rgba(3, 6, 19, 0.76) 36%, rgba(3, 6, 19, 0.12) 72%, rgba(3, 6, 19, 0.3) 100%);
+  }
+}
+
+@media (max-width: 620px) {
+  .hero-copy {
+    width: calc(100% - 2rem);
+    margin-left: 1rem;
+    padding-top: 2rem;
+  }
+
+  .hero-copy h1 {
+    font-size: 3.5rem;
+  }
+
+  .hero-copy p {
+    font-size: 1.1rem;
+  }
+
+  .hero-actions {
+    margin-top: 1.2rem;
+  }
+
+  .hero-actions .hero-button {
+    min-height: 56px;
+    font-size: 0.92rem;
+  }
+
+  .hero-actions .hero-button svg {
+    flex: 0 0 auto;
+    width: 20px;
+  }
+
+  .home-credit {
+    font-size: 0.86rem !important;
+  }
+}
+
+.shape-icon {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 4px;
+  overflow: visible;
+  color: #9cefff;
+  filter: drop-shadow(0 0 7px rgba(123, 241, 255, 0.22));
+}
+
+.shape-button[data-shape="rectangular-prism"] .shape-icon,
+.shape-button[data-shape="sphere"] .shape-icon {
+  color: #cfb6ff;
+}
+
+.shape-button[data-shape="triangular-prism"] .shape-icon {
+  color: #99f3ce;
+}
+
+.shape-button[data-shape="square-pyramid"] .shape-icon,
+.shape-button[data-shape="triangular-pyramid"] .shape-icon {
+  color: #e0b8ee;
+}
+
+.shape-button[data-shape="cone"] .shape-icon {
+  color: #ffdb9e;
+}
+
+.challenge-panel .challenge-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  gap: 0.85rem;
+}
+
+.challenge-card::before {
+  display: none;
+}
+
+.challenge-card .shape-chip {
+  width: fit-content;
+  border: 0;
+  border-left: 2px solid var(--gold);
+  border-radius: 0;
+  padding: 0.18rem 0.65rem;
+  background: transparent;
+  color: var(--gold);
+}
+
+.challenge-panel .touch-task,
+.challenge-panel .action-task,
+.info-panel .observation-primary {
+  border: 0;
+  border-left: 2px solid rgba(123, 241, 255, 0.72);
+  border-radius: 0 8px 8px 0;
+  background: rgba(123, 241, 255, 0.075);
+  box-shadow: none;
+}
+
+.class-net-reveal,
+.challenge-net-reveal {
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .class-panel .class-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .class-panel .class-tabs button {
+    min-width: 0;
+    min-height: 52px;
+    padding: 0.35rem 0.2rem;
+  }
+
+  .class-panel .step-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

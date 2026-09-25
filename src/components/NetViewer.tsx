@@ -14,6 +14,16 @@ type NetPart =
 
 export function NetViewer({ shape }: NetViewerProps) {
   const parts = getNetParts(shape.netType);
+  const viewBoxes: Record<ShapeData["netType"], string> = {
+    cube: "80 28 280 214",
+    "rectangular-prism": "42 34 350 204",
+    "triangular-prism": "55 64 320 150",
+    "square-pyramid": "102 32 216 216",
+    "triangular-pyramid": "82 60 256 194",
+    cylinder: "55 60 340 150",
+    cone: "64 38 300 186",
+    sphere: "88 22 244 226",
+  };
 
   return (
     <section className="net-viewer" aria-label={`Red geométrica de ${shape.name}`}>
@@ -21,7 +31,7 @@ export function NetViewer({ shape }: NetViewerProps) {
         <span>Red geométrica</span>
         <strong>{shape.netDescription}</strong>
       </div>
-      <svg viewBox="0 0 420 270" role="img" aria-label={`Representación de la red de ${shape.name}`}>
+      <svg viewBox={viewBoxes[shape.netType]} role="img" aria-label={`Representación de la red de ${shape.name}`}>
         <defs>
           <linearGradient id="netFill" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#9df5ff" stopOpacity="0.82" />
@@ -129,12 +139,12 @@ function getNetParts(type: ShapeData["netType"]): NetPart[] {
       ];
     case "rectangular-prism":
       return [
-        { kind: "rect", x: 70, y: 112, w: 78, h: 54, label: "rect." },
-        { kind: "rect", x: 148, y: 112, w: 112, h: 54, label: "rect." },
-        { kind: "rect", x: 260, y: 112, w: 78, h: 54, label: "rect." },
-        { kind: "rect", x: 148, y: 58, w: 112, h: 54, label: "base" },
-        { kind: "rect", x: 148, y: 166, w: 112, h: 54, label: "base" },
-        { kind: "rect", x: 338, y: 112, w: 42, h: 54, label: "rect." },
+        { kind: "rect", x: 55, y: 110, w: 62, h: 54, label: "rect." },
+        { kind: "rect", x: 117, y: 110, w: 100, h: 54, label: "rect." },
+        { kind: "rect", x: 217, y: 110, w: 62, h: 54, label: "rect." },
+        { kind: "rect", x: 279, y: 110, w: 100, h: 54, label: "rect." },
+        { kind: "rect", x: 117, y: 48, w: 100, h: 62, label: "base" },
+        { kind: "rect", x: 117, y: 164, w: 100, h: 62, label: "base" },
       ];
     case "triangular-prism":
       return [
